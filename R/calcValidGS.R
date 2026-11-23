@@ -40,15 +40,31 @@ calcValidGS <- function(datasource = "FRA2025", indicator = "relative") {
       out <- relative
       getNames(out) <- gsub(pattern = "gs_ha_", replacement = "", x = getNames(out))
       getNames(out) <- FRAnames(getNames(out))
+      # same convention as the MAgPIE calibration targets (mrcommons calcGrowingStockFRA): countries
+      # without a stock entry are filled, countries without any value get no weight
+      for (category in c("plantation", "other_planted", "nat_reg")) {
+        filled <- calcOutput("GrowingStockFRA", category = category, indicator = "per_ha", aggregate = FALSE)
+        out[, getYears(filled), FRAnames(category)] <- filled
+      }
       unit <- "m3/ha"
       weight <- collapseNames(readSource("FRA2025", subtype = "forest_area", convert = TRUE))
       getNames(weight) <- FRAnames(getNames(weight))
       weight <- weight[, , getNames(out)]
+      weight[out == 0] <- 0
+      # no stock where FRA reports no area of the category (e.g. JPN plantations)
+      out[weight == 0] <- 0
       getNames(weight) <- paste0(indicatorname, getNames(weight), " (", unit, ")")
       weight <- weight + 10^(-10)
     }
 
     getNames(out) <- paste0(indicatorname, getNames(out), " (", unit, ")")
+    # FRA forest holds no carbon-price afforestation, so it is also the reference for the model's forest without it
+    forestName <- grep("|+|Forest (", getNames(out), fixed = TRUE, value = TRUE)
+    if (length(forestName) == 1) {
+      exclName <- sub("|+|Forest (", "|Forest excl CO2-price AR (", forestName, fixed = TRUE)
+      out <- mbind(out, setNames(out[, , forestName], exclName))
+      if (!is.null(weight)) weight <- mbind(weight, setNames(weight[, , forestName], exclName))
+    }
 
     out <- add_dimension(out, dim = 3.1, add = "scenario", nm = "historical")
     out <- add_dimension(out, dim = 3.2, add = "model", nm = datasource)
