@@ -1,8 +1,8 @@
 Type: Package
 Package: mrvalidation
 Title: madrat data preparation for validation purposes
-Version: 2.74.1
-Date: 2026-10-29
+Version: 2.75.0
+Date: 2026-11-24
 Authors@R: c(
     person("Benjamin Leon", "Bodirsky", , "bodirsky@pik-potsdam.de", role = c("aut", "cre")),
     person("Stephen", "Wirth", role = "aut"),
@@ -33,7 +33,7 @@ BugReports: https://github.com/pik-piam/mrvalidation/issues
 Depends:
     madrat (>= 2.11.3),
     magclass (>= 7.0.1),
-    mrcommons (>= 1.41.0),
+    mrcommons (>= 1.76.0),
     mrdrivers (>= 4.0.0),
     mrfactors (>= 0.4.0),
     mrfaocore (>= 1.0.0),
